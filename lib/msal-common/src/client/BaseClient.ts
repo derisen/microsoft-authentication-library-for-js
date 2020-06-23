@@ -5,10 +5,11 @@
 
 import { ClientConfiguration, buildClientConfiguration } from "../config/ClientConfiguration";
 import { INetworkModule } from "../network/INetworkModule";
+import { NetworkManager } from "../network/NetworkManager";
 import { ICrypto } from "../crypto/ICrypto";
 import { Authority } from "../authority/Authority";
 import { Logger } from "../logger/Logger";
-import { AADServerParamKeys, Constants, HeaderNames } from "../utils/Constants";
+import { AADServerParamKeys, Constants, HeaderNames, HeaderValues } from "../utils/Constants";
 import { NetworkResponse } from "../network/NetworkManager";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { TrustedAuthority } from "../authority/TrustedAuthority";
@@ -63,6 +64,7 @@ export abstract class BaseClient {
     protected createDefaultTokenRequestHeaders(): Map<string, string> {
         const headers = this.createDefaultLibraryHeaders();
         headers.set(HeaderNames.CONTENT_TYPE, Constants.URL_FORM_CONTENT_TYPE);
+        headers.set(HeaderNames.X_MS_LIB_CAPABILITY, HeaderValues.X_MS_LIB_CAPABILITY_VALUE);
 
         return headers;
     }
