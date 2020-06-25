@@ -34,6 +34,12 @@ export abstract class BaseClient {
     // Network Interface
     protected networkClient: INetworkModule;
 
+<<<<<<< HEAD
+=======
+    // Network Manager
+    protected networkManager: NetworkManager;
+
+>>>>>>> Rebase and resolve merge conflicts
     // Default authority object
     protected authority: Authority;
 
@@ -53,7 +59,18 @@ export abstract class BaseClient {
         // Set the network interface
         this.networkClient = this.config.networkInterface;
 
+<<<<<<< HEAD
         TrustedAuthority.setTrustedAuthoritiesFromConfig(this.config.authOptions.knownAuthorities, this.config.authOptions.cloudDiscoveryMetadata);
+=======
+        // Set the NetworkManager
+        this.networkManager = new NetworkManager(
+            this.config.cryptoInterface, 
+            this.config.storageInterface, 
+            this.config.networkInterface
+        );
+
+        B2cAuthority.setKnownAuthorities(this.config.authOptions.knownAuthorities);
+>>>>>>> Rebase and resolve merge conflicts
 
         this.authority = this.config.authOptions.authority;
     }
