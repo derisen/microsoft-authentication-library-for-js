@@ -5,7 +5,7 @@
 
 import { ClientConfiguration, buildClientConfiguration } from "../config/ClientConfiguration";
 import { INetworkModule } from "../network/INetworkModule";
-import { ThrottlingManager, NetworkResponse } from "../network/ThrottlingManager";
+import { NetworkManager, NetworkResponse } from "../network/NetworkManager";
 import { ICrypto } from "../crypto/ICrypto";
 import { Authority } from "../authority/Authority";
 import { Logger } from "../logger/Logger";
@@ -13,7 +13,7 @@ import { AADServerParamKeys, Constants, HeaderNames, HeaderValues } from "../uti
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { TrustedAuthority } from "../authority/TrustedAuthority";
 import { CacheManager } from "../cache/CacheManager";
-import { RequestThumbprint } from "../network/RequestThumbprint";
+import { RequestThumbprint } from "../network/ThrottlingUtils";
 
 /**
  * Base application class which will construct requests to send to and handle responses from the Microsoft STS using the authorization code flow.
@@ -34,8 +34,8 @@ export abstract class BaseClient {
     // Network Interface
     protected networkClient: INetworkModule;
 
-    // Throttling Interface
-    protected throttlingManager: ThrottlingManager;
+    // Network Manager
+    protected networkManager: NetworkManager;
 
     // Default authority object
     protected authority: Authority;
@@ -56,7 +56,7 @@ export abstract class BaseClient {
         // Set the network interface
         this.networkClient = this.config.networkInterface;
 
-        this.throttlingManager = this.config.throttlingManager;
+        this.networkManager = new NetworkManager(this.networkClient, this.cacheManager);
 
         TrustedAuthority.setTrustedAuthoritiesFromConfig(this.config.authOptions.knownAuthorities, this.config.authOptions.cloudDiscoveryMetadata);
 
@@ -85,6 +85,7 @@ export abstract class BaseClient {
         headers.set(`${AADServerParamKeys.X_CLIENT_VER}`, this.config.libraryInfo.version);
         headers.set(`${AADServerParamKeys.X_CLIENT_OS}`, this.config.libraryInfo.os);
         headers.set(`${AADServerParamKeys.X_CLIENT_CPU}`, this.config.libraryInfo.cpu);
+        headers.set(HeaderNames.X_MS_LIB_CAPABILITY, HeaderValues.X_MS_LIB_CAPABILITY_VALUE);
 
         return headers;
     }
@@ -97,7 +98,7 @@ export abstract class BaseClient {
      * @param thumbprint
      */
     protected executePostToTokenEndpoint(tokenEndpoint: string, queryString: string, headers: Map<string, string>, thumbprint: RequestThumbprint): Promise<NetworkResponse<ServerAuthorizationTokenResponse>> {
-        return this.throttlingManager.sendPostRequest<ServerAuthorizationTokenResponse>(
+        return this.networkManager.sendPostRequest<ServerAuthorizationTokenResponse>(
             thumbprint,
             tokenEndpoint,
             { body: queryString, headers: headers }

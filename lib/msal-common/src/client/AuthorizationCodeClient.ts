@@ -11,7 +11,7 @@ import { RequestParameterBuilder } from "../server/RequestParameterBuilder";
 import { GrantType, AADServerParamKeys } from "../utils/Constants";
 import { ClientConfiguration } from "../config/ClientConfiguration";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
-import { NetworkResponse } from "../network/ThrottlingManager";
+import { NetworkResponse } from "../network/NetworkManager";
 import { ScopeSet } from "../request/ScopeSet";
 import { ResponseHandler } from "../response/ResponseHandler";
 import { AuthenticationResult } from "../response/AuthenticationResult";
@@ -22,7 +22,7 @@ import { ServerAuthorizationCodeResponse } from "../server/ServerAuthorizationCo
 import { AccountEntity } from "../cache/entities/AccountEntity";
 import { EndSessionRequest } from "../request/EndSessionRequest";
 import { ClientConfigurationError } from "../error/ClientConfigurationError";
-import { RequestThumbprint } from '../network/RequestThumbprint';
+import { RequestThumbprint } from '../network/ThrottlingUtils';
 
 /**
  * Oauth2.0 Authorization Code client
@@ -130,11 +130,11 @@ export class AuthorizationCodeClient extends BaseClient {
      * @param request
      */
     private async executeTokenRequest(authority: Authority, request: AuthorizationCodeRequest): Promise<NetworkResponse<ServerAuthorizationTokenResponse>> {
-        const thumbprint = new RequestThumbprint(
-            this.config.authOptions.clientId,
-            request.authority,
-            request.scopes
-        );
+        const thumbprint: RequestThumbprint = {
+            clientId: this.config.authOptions.clientId,
+            authority: authority.canonicalAuthority,
+            scopes: request.scopes
+        };
         
         const requestBody = this.createTokenRequestBody(request);
         const headers: Map<string, string> = this.createDefaultTokenRequestHeaders();
