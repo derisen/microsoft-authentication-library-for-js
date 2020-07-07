@@ -5,15 +5,15 @@
 
 import { ClientConfiguration, buildClientConfiguration } from "../config/ClientConfiguration";
 import { INetworkModule } from "../network/INetworkModule";
-import { NetworkManager } from "../network/NetworkManager";
+import { ThrottlingManager, NetworkResponse } from "../network/ThrottlingManager";
 import { ICrypto } from "../crypto/ICrypto";
 import { Authority } from "../authority/Authority";
 import { Logger } from "../logger/Logger";
 import { AADServerParamKeys, Constants, HeaderNames, HeaderValues } from "../utils/Constants";
-import { NetworkResponse } from "../network/NetworkManager";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { TrustedAuthority } from "../authority/TrustedAuthority";
 import { CacheManager } from "../cache/CacheManager";
+import { RequestThumbprint } from "../network/RequestThumbprint";
 
 /**
  * Base application class which will construct requests to send to and handle responses from the Microsoft STS using the authorization code flow.
@@ -34,6 +34,9 @@ export abstract class BaseClient {
     // Network Interface
     protected networkClient: INetworkModule;
 
+    // Throttling Interface
+    protected throttlingManager: ThrottlingManager;
+
     // Default authority object
     protected authority: Authority;
 
@@ -52,6 +55,8 @@ export abstract class BaseClient {
 
         // Set the network interface
         this.networkClient = this.config.networkInterface;
+
+        this.throttlingManager = this.config.throttlingManager;
 
         TrustedAuthority.setTrustedAuthoritiesFromConfig(this.config.authOptions.knownAuthorities, this.config.authOptions.cloudDiscoveryMetadata);
 
@@ -89,13 +94,13 @@ export abstract class BaseClient {
      * @param tokenEndpoint
      * @param queryString
      * @param headers
+     * @param thumbprint
      */
-    protected executePostToTokenEndpoint(tokenEndpoint: string, queryString: string, headers: Map<string, string>): Promise<NetworkResponse<ServerAuthorizationTokenResponse>> {
-        return this.networkClient.sendPostRequestAsync<
-        ServerAuthorizationTokenResponse
-        >(tokenEndpoint, {
-            body: queryString,
-            headers: headers,
-        });
+    protected executePostToTokenEndpoint(tokenEndpoint: string, queryString: string, headers: Map<string, string>, thumbprint: RequestThumbprint): Promise<NetworkResponse<ServerAuthorizationTokenResponse>> {
+        return this.throttlingManager.sendPostRequest<ServerAuthorizationTokenResponse>(
+            thumbprint,
+            tokenEndpoint,
+            { body: queryString, headers: headers }
+        );
     }
 }

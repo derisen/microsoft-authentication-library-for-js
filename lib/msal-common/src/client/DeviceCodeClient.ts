@@ -13,6 +13,7 @@ import { ClientConfiguration } from "../config/ClientConfiguration";
 import { TimeUtils } from "../utils/TimeUtils";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { ScopeSet } from "../request/ScopeSet";
+import { RequestThumbprint } from '../network/RequestThumbprint';
 
 /**
  * OAuth2.0 Device code client
@@ -46,10 +47,16 @@ export class DeviceCodeClient extends BaseClient {
      */
     private async getDeviceCode(request: DeviceCodeRequest): Promise<DeviceCodeResponse> {
 
+        const thumbprint = new RequestThumbprint(
+            this.config.authOptions.clientId,
+            request.authority,
+            request.scopes
+        );
+
         const queryString = this.createQueryString(request);
         const headers = this.createDefaultLibraryHeaders();
 
-        return this.executePostRequestToDeviceCodeEndpoint(this.authority.deviceCodeEndpoint, queryString, headers);
+        return this.executePostRequestToDeviceCodeEndpoint(this.authority.deviceCodeEndpoint, queryString, headers, thumbprint);
     }
 
     /**
@@ -61,7 +68,8 @@ export class DeviceCodeClient extends BaseClient {
     private async executePostRequestToDeviceCodeEndpoint(
         deviceCodeEndpoint: string,
         queryString: string,
-        headers: Map<string, string>): Promise<DeviceCodeResponse> {
+        headers: Map<string, string>,
+        thumbprint: RequestThumbprint): Promise<DeviceCodeResponse> {
 
         const {
             body: {
@@ -72,7 +80,8 @@ export class DeviceCodeClient extends BaseClient {
                 interval,
                 message
             }
-        } = await this.networkClient.sendPostRequestAsync<ServerDeviceCodeResponse>(
+        } = await this.throttlingManager.sendPostRequest<ServerDeviceCodeResponse>(
+            thumbprint,
             deviceCodeEndpoint,
             {
                 body: queryString,
@@ -137,10 +146,16 @@ export class DeviceCodeClient extends BaseClient {
                         reject(ClientAuthError.createDeviceCodeExpiredError());
 
                     } else {
+                        const thumbprint = new RequestThumbprint(
+                            this.config.authOptions.clientId,
+                            request.authority,
+                            request.scopes
+                        );
                         const response = await this.executePostToTokenEndpoint(
                             this.authority.tokenEndpoint,
                             requestBody,
-                            headers);
+                            headers,
+                            thumbprint);
 
                         if (response.body && response.body.error == Constants.AUTHORIZATION_PENDING) {
                             // user authorization is pending. Sleep for polling interval and try again

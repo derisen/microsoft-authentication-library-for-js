@@ -6,15 +6,16 @@
 import { ClientConfiguration } from "../config/ClientConfiguration";
 import { BaseClient } from "./BaseClient";
 import { RefreshTokenRequest } from "../request/RefreshTokenRequest";
-import { Authority, NetworkResponse } from "..";
+import { Authority } from "..";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { RequestParameterBuilder } from "../server/RequestParameterBuilder";
 import { ScopeSet } from "../request/ScopeSet";
 import { GrantType } from "../utils/Constants";
 import { ResponseHandler } from "../response/ResponseHandler";
 import { AuthenticationResult } from "../response/AuthenticationResult";
-import { NetworkManager } from '../network/NetworkManager';
-import { RequestThumbprint } from '../cache/entities/RequestThumbprintEntity';
+import { ThrottlingManager, NetworkResponse } from "../network/ThrottlingManager";
+import { RequestThumbprint } from "../network/RequestThumbprint"
+import { RequestThumbprintValue } from "../network/RequestThumbprintValue";
 
 /**
  * OAuth2.0 refresh token client
@@ -46,20 +47,17 @@ export class RefreshTokenClient extends BaseClient {
 
     private async executeTokenRequest(request: RefreshTokenRequest, authority: Authority)
         : Promise<NetworkResponse<ServerAuthorizationTokenResponse>> {
-
-        const thumbprint = new RequestThumbprint(/* TODO: fill out */);
-        const queryParams = {
-            body: this.createTokenRequestBody(request),
-            headers: this.createDefaultTokenRequestHeaders()
-        };
-        
-        return this.networkManager.sendPostRequest(
-            thumbprint, 
-            authority.tokenEndpoint, 
-            queryParams,
-            false
+            
+        const thumbprint = new RequestThumbprint(
+            this.config.authOptions.clientId,
+            request.authority,
+            request.scopes
         );
-        // return this.executePostToTokenEndpoint(authority.tokenEndpoint, requestBody, headers);
+
+        const requestBody = this.createTokenRequestBody(request);
+        const headers: Map<string, string> = this.createDefaultTokenRequestHeaders();
+
+        return this.executePostToTokenEndpoint(authority.tokenEndpoint, requestBody, headers, thumbprint);
     }
 
     private createTokenRequestBody(request: RefreshTokenRequest): string {
