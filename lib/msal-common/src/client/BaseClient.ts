@@ -9,7 +9,7 @@ import { NetworkManager, NetworkResponse } from "../network/NetworkManager";
 import { ICrypto } from "../crypto/ICrypto";
 import { Authority } from "../authority/Authority";
 import { Logger } from "../logger/Logger";
-import { AADServerParamKeys, Constants, HeaderNames, HeaderValues } from "../utils/Constants";
+import { AADServerParamKeys, Constants, HeaderNames } from "../utils/Constants";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { TrustedAuthority } from "../authority/TrustedAuthority";
 import { CacheManager } from "../cache/CacheManager";
@@ -69,7 +69,7 @@ export abstract class BaseClient {
     protected createDefaultTokenRequestHeaders(): Map<string, string> {
         const headers = this.createDefaultLibraryHeaders();
         headers.set(HeaderNames.CONTENT_TYPE, Constants.URL_FORM_CONTENT_TYPE);
-        headers.set(HeaderNames.X_MS_LIB_CAPABILITY, HeaderValues.X_MS_LIB_CAPABILITY_VALUE);
+        headers.set(HeaderNames.X_MS_LIB_CAPABILITY, HeaderNames.X_MS_LIB_CAPABILITY_VALUE);
 
         return headers;
     }
@@ -85,7 +85,7 @@ export abstract class BaseClient {
         headers.set(`${AADServerParamKeys.X_CLIENT_VER}`, this.config.libraryInfo.version);
         headers.set(`${AADServerParamKeys.X_CLIENT_OS}`, this.config.libraryInfo.os);
         headers.set(`${AADServerParamKeys.X_CLIENT_CPU}`, this.config.libraryInfo.cpu);
-        headers.set(HeaderNames.X_MS_LIB_CAPABILITY, HeaderValues.X_MS_LIB_CAPABILITY_VALUE);
+        headers.set(HeaderNames.X_MS_LIB_CAPABILITY, HeaderNames.X_MS_LIB_CAPABILITY_VALUE);
 
         return headers;
     }

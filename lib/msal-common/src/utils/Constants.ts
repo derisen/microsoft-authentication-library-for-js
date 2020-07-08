@@ -48,13 +48,7 @@ export const Constants = {
 export enum HeaderNames {
     CONTENT_TYPE = "Content-Type",
     RETRY_AFTER = "Retry-After",
-    X_MS_LIB_CAPABILITY = "x-ms-lib-capability"
-}
-
-/**
- * Header values
- */
-export enum HeaderValues {
+    X_MS_LIB_CAPABILITY = "x-ms-lib-capability",
     X_MS_LIB_CAPABILITY_VALUE = "retry-after, h429"
 }
 
