@@ -28,7 +28,8 @@ import {
     SilentFlowClient,
     EndSessionRequest,
     BaseAuthRequest,
-    Logger
+    Logger,
+    ThrottlingUtils
 } from "@azure/msal-common";
 import { buildConfiguration, Configuration } from "../config/Configuration";
 import { BrowserStorage } from "../cache/BrowserStorage";
@@ -290,6 +291,8 @@ export class PublicClientApplication implements IPublicClientApplication {
         const popupWindow: Window = interactionHandler.initiateAuthRequest(navigateUrl, authCodeRequest);
         // Monitor the window for the hash. Return the string value and close the popup when the hash is received. Default timeout is 60 seconds.
         const hash = await interactionHandler.monitorPopupForHash(popupWindow, this.config.system.windowHashTimeout);
+        // Remove throttle if it exists
+        ThrottlingUtils.removeThrottle(this.browserStorage, this.config.auth.clientId, authCodeRequest.authority, authCodeRequest.scopes);
         // Handle response from hash string.
         return await interactionHandler.handleCodeResponse(hash);
     }
