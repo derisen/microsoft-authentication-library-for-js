@@ -13,7 +13,7 @@ import { AADServerParamKeys, Constants, HeaderNames } from "../utils/Constants";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { TrustedAuthority } from "../authority/TrustedAuthority";
 import { CacheManager } from "../cache/CacheManager";
-import { RequestThumbprint } from "../network/ThrottlingUtils";
+import { RequestThumbprint } from "../network/RequestThumbprint";
 
 /**
  * Base application class which will construct requests to send to and handle responses from the Microsoft STS using the authorization code flow.

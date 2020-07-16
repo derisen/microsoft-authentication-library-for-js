@@ -14,7 +14,7 @@ import { GrantType } from "../utils/Constants";
 import { ResponseHandler } from "../response/ResponseHandler";
 import { AuthenticationResult } from "../response/AuthenticationResult";
 import { NetworkResponse } from "../network/NetworkManager";
-import { RequestThumbprint} from "../network/ThrottlingUtils";
+import { RequestThumbprint} from "../network/RequestThumbprint";
 
 /**
  * OAuth2.0 refresh token client

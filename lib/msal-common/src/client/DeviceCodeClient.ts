@@ -13,7 +13,7 @@ import { ClientConfiguration } from "../config/ClientConfiguration";
 import { TimeUtils } from "../utils/TimeUtils";
 import { ServerAuthorizationTokenResponse } from "../server/ServerAuthorizationTokenResponse";
 import { ScopeSet } from "../request/ScopeSet";
-import { RequestThumbprint } from '../network/ThrottlingUtils';
+import { RequestThumbprint } from "../network/RequestThumbprint";
 
 /**
  * OAuth2.0 Device code client
